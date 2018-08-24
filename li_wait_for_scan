@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+from pprint import pprint
+import sys
+import time
+import layint_api
+from layint_api.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+# get_image() does work to get image via API
+def get_image(imageID):
+    if args.verbose:
+        print("Checking image scan status on API host %s..." % (v.get("api_host")))
+    try:
+        api_result = image_api.get_image(imageID)
+    except ApiException as e:
+        print("Exception when calling ImageApi->get_image: %s\n" % e)
+        sys.exit(1)
+
+    if args.verbose:
+        pprint(api_result)
+
+    return api_result
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("-i", "--id", help="ID of image to wait for scan to complete", required=True)
+parser.add_argument("-t", "--timeout", help="Maximum time to wait for scan to complete in seconds", default=30, required=False)
+parser.add_argument("-c", "--check", help="Time to wait between each scan check in seconds", default=5, required=False)
+args = parser.parse_args()
+
+env_setup()
+
+layint_api.configuration.api_key['Authorization'] = v.get("api_key")
+
+image_api = layint_api.ImageApi()
+image_api.api_client.host = v.get("api_host")
+
+image = get_image(args.id)
+i = 0
+while image.scan_status != "done" and image.scan_status != "failed" and i < args.timeout:
+    if args.verbose:
+        print("Waiting %s seconds before checking again..." % (args.check))
+    time.sleep(args.check)
+    image = get_image(args.id)
+    i = i + 1
+
+if image.scan_status == "failed":
+    print("Scan failed.")
+    sys.exit(1)
+
+if i == args.timeout:
+    print("Error timeout reached.")
+    sys.exit(1)
+
+if args.verbose:
+    print("Image scan done.")
+
+sys.exit(0)
