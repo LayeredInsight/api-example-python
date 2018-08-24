@@ -8,8 +8,8 @@ from __future__ import print_function
 import argparse
 import sys
 import time
-import layint_runtime_api
-from layint_runtime_api.rest import ApiException
+import layint_api
+from layint_api.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
@@ -46,8 +46,8 @@ if args.config is not None and args.configid is not None:
 
 env_setup()
 
-layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
-registry_api = layint_runtime_api.RegistryApi()
+layint_api.configuration.api_key['Authorization'] = v.get("api_key")
+registry_api = layint_api.RegistryApi()
 registry_api.api_client.host = v.get("api_host")
 
 if args.verbose:
@@ -68,7 +68,7 @@ if args.push_registry is not None:
 
 config = None
 if args.config is not None or args.configid is not None:
-    config_api = layint_runtime_api.ConfigurationApi()
+    config_api = layint_api.ConfigurationApi()
 
     try:
         if args.configid is not None:
@@ -89,7 +89,7 @@ if args.config is not None or args.configid is not None:
 
 policy = None
 if args.policy is not None or args.policyid is not None:
-    policy_api = layint_runtime_api.PolicyApi()
+    policy_api = layint_api.PolicyApi()
 
     try:
         if args.policyid is not None:
@@ -108,9 +108,9 @@ if args.policy is not None or args.policyid is not None:
         sys.exit(3)
 
 # Image
-image_api = layint_runtime_api.ImageApi()
+image_api = layint_api.ImageApi()
 image_api.api_client.host = v.get("api_host")
-image = layint_runtime_api.Image()
+image = layint_api.Image()
 image.name = args.name
 image.description = args.description
 image.registry = registry.id

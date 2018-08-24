@@ -23,7 +23,7 @@ Now any libraries you install with pip will be local to this environment, access
 From this source directory, run
 
 ```
-pip install layint-runtime-api
+pip install layint-api
 pip install -r requirements.txt
 ```
 

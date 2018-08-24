@@ -7,9 +7,9 @@
 from __future__ import print_function
 import argparse
 import sys
-import layint_runtime_api
+import layint_api
 from pprint import pprint
-from layint_runtime_api.rest import ApiException
+from layint_api.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
@@ -21,9 +21,9 @@ args = parser.parse_args()
 
 env_setup()
 
-layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
-# layint_runtime_api.configuration.debug = True
-image_api = layint_runtime_api.ImageApi()
+layint_api.configuration.api_key['Authorization'] = v.get("api_key")
+# layint_api.configuration.debug = True
+image_api = layint_api.ImageApi()
 image_api.api_client.host = v.get("api_host")
 
 if args.verbose:

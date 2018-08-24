@@ -8,8 +8,8 @@ from __future__ import print_function
 import argparse
 import sys
 from pprint import pprint
-import layint_runtime_api
-from layint_runtime_api.rest import ApiException
+import layint_api
+from layint_api.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
 
@@ -22,8 +22,8 @@ args = parser.parse_args()
 
 env_setup()
 
-layint_runtime_api.configuration.api_key['Authorization'] = v.get("api_key")
-policy_api = layint_runtime_api.PolicyApi()
+layint_api.configuration.api_key['Authorization'] = v.get("api_key")
+policy_api = layint_api.PolicyApi()
 policy_api.api_client.host = v.get("api_host")
 
 if (args.name and args.policyid) or not (args.name or args.policyid):
