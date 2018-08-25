@@ -11,8 +11,8 @@ COPY * /layint/
 COPY li_utils/* /layint/li_utils/
 RUN apk update && \
     apk add gcc musl-dev && \
-    pip install --index-url https://test.pypi.org/simple/ layint-api && \
-    pip install -r /layint/requirements.txt
+    pip install -r /layint/requirements.txt && \
+    pip install --index-url https://test.pypi.org/simple/ layint-api
 
 ### Set environment variables for your installation
 ENV LI_API_KEY ApiKey:username:setanapikey
