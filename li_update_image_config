@@ -51,14 +51,24 @@ if args.verbose:
     print("Got image image:")
     pprint(image)
 
-image.config_id = config.id
+# init the request
+request = layint_api.ImageUpdateRequest()
+request.id = image.id
+request.config_id = image.config_id
+request.policy_id = image.policy_id
+request.push_registry = image.push_registry
+request.push_name = image.push_name
+request.tags = image.tags
+
+# update the request
+request.config_id = config.id
 
 # Update image
 if args.verbose:
     print("Updating Image on API host %s..." % (v.get("api_host")))
-    pprint(image)
+    pprint(request)
 try:
-    api_response = image_api.update_image(image.id, image=image)
+    api_response = image_api.update_image(image.id, image_update_request=request)
 except ApiException as e:
     print("Exception when calling ImageApi->update_image: %s\n" % e)
     sys.exit()
