@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import sys
+from pprint import pprint
+import layint_api
+from layint_api.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--configid", help="ID of configuration to apply to image", required=False)
+parser.add_argument("--policyid", help="ID of security policy to apply to image", required=False)
+parser.add_argument("--push_registry", help="ID of push registry to apply to image", required=False)
+# TODO add support to update push_name, tags
+parser.add_argument("-i", "--id", help="ID of image to update", required=True)
+args = parser.parse_args()
+
+env_setup()
+
+layint_api.configuration.api_key['Authorization'] = v.get("api_key")
+
+config = None
+if args.configid is not None:
+    if args.verbose:
+        print("Looking up config %s on API host %s..." % (args.configid, v.get("api_host")))
+    try:
+        config_api = layint_api.ConfigurationApi()
+        config_api.api_client.host = v.get("api_host")
+        config = config_api.get_config(args.configid)
+    except ApiException as e:
+        print("Exception when calling ConfigurationApi->get_config: %s\n" % e)
+        sys.exit(1)
+
+policy = None
+if args.policyid is not None:
+    if args.verbose:
+        print("Looking up policy %s on API host %s..." % (args.policyid, v.get("api_host")))
+    try:
+        policy_api = policy_api = layint_api.PolicyApi()
+        policy_api.api_client.host = v.get("api_host")
+        policy = policy_api.get_policy(args.policyid)
+    except ApiException as e:
+        print("Exception when calling PolicyApi->get_policy: %s\n" % e)
+        sys.exit(1)
+
+push_registry = None
+# check empty-string to indicate desire to clear option
+if args.push_registry is not None and args.push_registry is not "":
+    try:
+        registry_api = layint_api.RegistryApi()
+        registry_api.api_client.host = v.get("api_host")
+        push_registry = registry_api.get_registry_by_name(args.push_registry)
+    except ApiException as e:
+        print("Exception when calling RegistryApi->get_registry_by_name: %s\n" % e)
+        sys.exit(1)
+
+
+image_api = layint_api.ImageApi()
+image_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Looking up image %s on API host %s..." % (args.id, v.get("api_host")))
+try:
+    image = image_api.get_image(args.id)
+except ApiException as e:
+    print("Exception when calling ImageApi->get_image: %s\n" % e)
+    sys.exit(1)
+
+if args.verbose:
+    print("Got image image:")
+    pprint(image)
+
+# init the request
+request = layint_api.ImageUpdateRequest()
+request.id = image.id
+request.config_id = image.config_id
+request.policy_id = image.policy_id
+request.push_registry = image.push_registry
+request.push_name = image.push_name
+request.tags = image.tags
+
+# update the request
+if config is not None:
+    request.config_id = config.id
+
+if policy is not None:
+    request.policy_id = policy.id
+
+if args.push_registry is "":
+    request.push_registry = None
+
+if push_registry is not None:
+    request.push_registry = push_registry.id
+
+# Update image
+if args.verbose:
+    print("Updating Image on API host %s..." % (v.get("api_host")))
+    pprint(request)
+try:
+    api_response = image_api.update_image(image.id, image_update_request=request)
+except ApiException as e:
+    print("Exception when calling ImageApi->update_image: %s\n" % e)
+    sys.exit(1)
+
+if args.verbose:
+    print("Image updated, ID " + str(image.id))

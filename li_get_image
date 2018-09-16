@@ -16,7 +16,7 @@ from li_utils.envtools import env_setup
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--imageid", help="ID of image to get", required=True)
+parser.add_argument("-i", "--id", help="ID of image to get", required=True)
 args = parser.parse_args()
 
 env_setup()
@@ -27,12 +27,12 @@ image_api = layint_api.ImageApi()
 image_api.api_client.host = v.get("api_host")
 
 if args.verbose:
-    print("Looking up image %s on API host %s..." % (args.imageid, v.get("api_host")))
+    print("Looking up image %s on API host %s..." % (args.id, v.get("api_host")))
 try:
-    image = image_api.get_image(args.imageid)
+    image = image_api.get_image(args.id)
 except ApiException as e:
     print("Exception when calling ImageApi->get_image: %s\n" % e)
-    sys.exit()
+    sys.exit(1)
 
 if args.verbose:
     print("image detail:")

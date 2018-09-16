@@ -18,7 +18,7 @@ env_setup()
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--imageid", help="ID of image", required=True)
+parser.add_argument("-i", "--id", help="ID of image", required=True)
 args = parser.parse_args()
 
 layint_api.configuration.api_key['Authorization'] = v.get("api_key")
@@ -26,14 +26,14 @@ image_api = layint_api.ImageApi()
 image_api.api_client.host = v.get("api_host")
 
 if args.verbose:
-    print("Deleting Image by ID %s on API host %s..." % (args.imageid, v.get("api_host")))
+    print("Deleting Image by ID %s on API host %s..." % (args.id, v.get("api_host")))
 try:
-    api_response = image_api.delete_image(args.imageid)
+    api_response = image_api.delete_image(args.id)
     if args.verbose:
         pprint(api_response)
 except ApiException as e:
     print("Exception when calling ImageApi->delete_image: %s" % e)
-    sys.exit()
+    sys.exit(1)
 
 if args.verbose:
-    print("Image deleted, ID " + str(args.imageid))
+    print("Image deleted, ID " + str(args.id))

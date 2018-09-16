@@ -3,12 +3,6 @@
 # Copyright (C) 2018 Layered Insight - All Rights Reserved
 # Unauthorized copying of this file, via any medium is strictly prohibited
 # Proprietary and confidential
-#
-# This script is a workaround to provide a User with a working 'Default Policy'.
-#   Once api#637 is resolved, a default policy for the default resource group
-#   does not need to be created.
-# This script may be deprecated as an example if default policies and configs are copied 
-#   automatically when a new deployment resource group is created.
 
 from __future__ import print_function
 import argparse
@@ -22,8 +16,7 @@ from li_utils.envtools import env_setup
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-# name cannot be changed 
-#parser.add_argument("--name", help="Name for policy")
+parser.add_argument("--name", help="Name for policy")
 args = parser.parse_args()
 
 env_setup()
@@ -33,18 +26,49 @@ policy_api = layint_api.PolicyApi()
 policy_api.api_client.host = v.get("api_host")
 
 policy = layint_api.Policy()
-#if args.name:
-#    policy.name = args.name
-#else:
+if args.name:
+    policy.name = args.name
+else:
+    policy.name = "Prevent all network syscalls"
 
-# case sensitive, must match api/data/DefaultPolicyName in policy.go
-policy.name = "Default Policy"
-policy.description = "Default policy blocks nothing."
+policy.description = ""
 policy.default_file_action = "allow"
 policy.default_network_action = "allow"
 policy.default_program_action = "allow"
 policy.schema_version = "v1.0"
 policy.suspend = False
+policy.rules = []
+
+network_syscalls = [ 
+"accept",
+"accept4",
+"bind",
+"connect",
+"getpeername",
+"getsockname",
+"getsockopt",
+"listen",
+"recv",
+"recvfrom",
+"recvmmsg",
+"recvmsg",
+"send",
+"sendmmsg",
+"sendmsg",
+"sendto",
+"setsockopt",
+"shutdown",
+"socket",
+"socketcall",
+"socketpair" ]
+
+for syscall in network_syscalls:
+    rule = layint_api.PolicyRule()
+    rule.name = "Deny " + syscall
+    rule.action = "deny"
+    rule.rule_type = "syscall"
+    rule.syscall = "sys_" + syscall
+    policy.rules.append(rule)
 
 # Create new Policy definition
 if args.verbose:

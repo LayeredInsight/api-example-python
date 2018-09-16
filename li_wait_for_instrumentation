@@ -20,7 +20,7 @@ from li_utils.envtools import env_setup
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--imageid", help="ID of image to get", required=True)
+parser.add_argument("-i", "--id", help="ID of image to get", required=True)
 parser.add_argument("--sleep", help="Time to sleep between checks in seconds", required=False, default=5)
 args = parser.parse_args()
 
@@ -38,9 +38,9 @@ image_api.api_client.host = v.get("api_host")
 while True:
 
   if args.verbose:
-      print("Looking up image %s on API host %s..." % (args.imageid, v.get("api_host")))
+      print("Looking up image %s on API host %s..." % (args.id, v.get("api_host")))
   try:
-      image = image_api.get_image(args.imageid)
+      image = image_api.get_image(args.id)
   except ApiException as e:
       print("Exception when calling ImageApi->get_image: %s\n" % e)
       #sys.exit()

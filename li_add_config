@@ -27,7 +27,7 @@ args = parser.parse_args()
 if (args.policy and args.policyid) or not (args.policy or args.policyid):
     print("Need to provide either --policy or --policyid arguments, but not both.\n")
     parser.print_help()
-    sys.exit()
+    sys.exit(2)
 
 env_setup()
 
@@ -55,7 +55,7 @@ if args.policy is not None:
         config.policy_id = policy_api.get_policy_by_name(args.policy).id
     except ApiException as e:
         print("Exception when calling PolicyApi->get_policy_by_name: %s" % e)
-        sys.exit()
+        sys.exit(1)
 
 # Create new Config definition
 if args.verbose:
@@ -66,7 +66,9 @@ try:
     #pprint(api_response)
 except ApiException as e:
     print("Exception when calling ConfigurationApi->add_config: %s\n" % e)
-    sys.exit()
+    sys.exit(1)
 
 if args.verbose:
     print("Config created, ID " + str(config.id))
+else:
+    print(str(config.id))
