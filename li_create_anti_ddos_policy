@@ -67,7 +67,9 @@ try:
         pprint(api_response)
 except ApiException as e:
     print("Exception when calling PolicyApi->add_policy: %s\n" % e)
-    sys.exit()
+    sys.exit(1)
 
 if args.verbose:
     print("Policy created, ID " + str(policy.id))
+else:
+    print(str(policy.id))

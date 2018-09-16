@@ -18,7 +18,7 @@ env_setup()
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--containerid", help="ID of container", required=True)
+parser.add_argument("-i", "--id", help="ID of container", required=True)
 args = parser.parse_args()
 
 layint_api.configuration.api_key['Authorization'] = v.get("api_key")
@@ -26,14 +26,14 @@ container_api = layint_api.ContainerApi()
 container_api.api_client.host = v.get("api_host")
 
 if args.verbose:
-    print("Deleting Container by ID %s on API host %s..." % (args.containerid, v.get("api_host")))
+    print("Deleting Container by ID %s on API host %s..." % (args.id, v.get("api_host")))
 try:
-    api_response = container_api.delete_container(args.containerid)
+    api_response = container_api.delete_container(args.id)
     if args.verbose:
         pprint(api_response)
 except ApiException as e:
     print("Exception when calling ContainerApi->delete_container: %s" % e)
-    sys.exit()
+    sys.exit(1)
 
 if args.verbose:
-    print("Container deleted, ID " + str(args.containerid))
+    print("Container deleted, ID " + str(args.id))

@@ -20,7 +20,7 @@ parser.add_argument("--configid", help="ID of configuration to apply to image", 
 parser.add_argument("--policyid", help="ID of security policy to apply to image", required=False)
 parser.add_argument("--push_registry", help="ID of push registry to apply to image", required=False)
 # TODO add support to update push_name, tags
-parser.add_argument("--imageid", help="ID of image to update", required=True)
+parser.add_argument("-i", "--id", help="ID of image to update", required=True)
 args = parser.parse_args()
 
 env_setup()
@@ -67,9 +67,9 @@ image_api = layint_api.ImageApi()
 image_api.api_client.host = v.get("api_host")
 
 if args.verbose:
-    print("Looking up image %s on API host %s..." % (args.imageid, v.get("api_host")))
+    print("Looking up image %s on API host %s..." % (args.id, v.get("api_host")))
 try:
-    image = image_api.get_image(args.imageid)
+    image = image_api.get_image(args.id)
 except ApiException as e:
     print("Exception when calling ImageApi->get_image: %s\n" % e)
     sys.exit(1)
