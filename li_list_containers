@@ -36,5 +36,5 @@ if args.verbose:
     pprint(containers)
 
 for container in containers:
-    print(" %s - %s - %s - %s" % (container['Id'], container['Status'], container['Location'], container['Application']))
+    print(" %s - %s - %s - %s" % (container['ID'], container['Status'], container['Location'], container['Application']))
     # pprint(container)

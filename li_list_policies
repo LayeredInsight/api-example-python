@@ -39,4 +39,4 @@ for policy in policies:
     # optionally match policy name 
     policyName=policy['Name']
     if args.name is None or args.name == policyName:
-        print(" %s - %s - %s" % (policy['Id'], policy['Name'], policy['Description']))
+        print(" %s - %s - %s" % (policy['ID'], policy['Name'], policy['Description']))
