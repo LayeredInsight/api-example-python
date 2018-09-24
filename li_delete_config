@@ -18,7 +18,7 @@ env_setup()
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--id", help="Id for config", required=True)
+parser.add_argument("--id", help="ID for config", required=True)
 args = parser.parse_args()
 
 layint_api.configuration.api_key['Authorization'] = v.get("api_key")
