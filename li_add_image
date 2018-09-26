@@ -21,6 +21,7 @@ parser.add_argument("--description", help="Description for image")
 parser.add_argument("--registry", help="Name of registry image is stored in", required=True)
 parser.add_argument("--push-registry", help="Name of registry to push layered image", required=False)
 parser.add_argument("--push-name", help="Name for image to push", required=False)
+parser.add_argument("--submitter", help="Comma seperated list of email ids to send scan status to", required=False)
 parser.add_argument("--config", help="Name of configuration to apply to image", required=False)
 parser.add_argument("--configid", help="ID of configuration to apply to image", required=False)
 parser.add_argument("--policy", help="Name of security policy to apply to image", required=False)
@@ -130,6 +131,9 @@ if args.push_registry is not None:
         # fall back to original image name
         print("Using original image name in push registry since push-name not specified: %s/%s" % (push_registry.url, image.name))
         image.push_name = image.name
+
+if args.submitter is not None:
+    image.submitter = args.submitter.split(",")
 
 instrument = "false"
 if args.instrument:
