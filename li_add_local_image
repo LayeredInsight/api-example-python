@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+import argparse
+import sys
+import layint_api
+from layint_api.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+from subprocess import call
+import uuid
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("--name", help="Name of local image", required=True)
+args = parser.parse_args()
+
+env_setup()
+
+layint_api.configuration.api_key['Authorization'] = v.get("api_key")
+
+# Image API
+image_api = layint_api.ImageApi()
+image_api.api_client.host = v.get("api_host")
+
+# Create image.tar
+if len(args.name.split(":")) < 2:
+  print("Using default tag 'latest'")
+  args.name = args.name + ":latest"
+image_tar = "/tmp/"+str(uuid.uuid4())+".tar"
+rc = call(["docker", "save", args.name, "-o", image_tar])
+if rc != 0:
+    print("Failed to create image tar using 'docker save'. Make sure that image exists locally.")
+    sys.exit(1)
+  
+# Create new Image definition
+if args.verbose:
+    print("Creating Image %s on API host %s..." % (args.name, v.get("api_host")))
+try:
+    api_response = image_api.add_local_image(image_name=args.name, image_tar=image_tar)
+except ApiException as e:
+    print("Exception when calling ImageApi->add_local_image: %s\n" % e)
+    call(["rm", image_tar])
+    sys.exit(1)
+
+if args.verbose:
+    print(api_response)
+    call(["rm", image_tar])
+else:
+    print("Image created, ID " + api_response.id)
+    call(["rm", image_tar])
