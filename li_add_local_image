@@ -12,6 +12,46 @@ from vyper import v
 from li_utils.envtools import env_setup
 from subprocess import call
 import uuid
+import gzip
+import shutil
+import time
+import threading
+
+# Spinner for waiting indicator
+class Spinner:
+    spinning = False
+    delay = 0.1
+
+    @staticmethod
+    def spinning_cursor():
+        while 1:
+            for cursor in '|/-\\': yield cursor
+
+    def __init__(self, delay=None):
+        self.spinner_generator = self.spinning_cursor()
+        if delay and float(delay): self.delay = delay
+
+    def spinner_run(self):
+        while self.spinning:
+            sys.stdout.write(next(self.spinner_generator))
+            sys.stdout.flush()
+            time.sleep(self.delay)
+            sys.stdout.write('\b')
+            sys.stdout.flush()
+
+    def start(self):
+        self.spinning = True
+        threading.Thread(target=self.spinner_run).start()
+
+    def stop(self):
+        self.spinning = False
+        time.sleep(self.delay)
+
+spinner = Spinner()
+def cleanup():
+    spinner.stop()
+    call(["rm", image_tar])
+    call(["rm", image_gz])
 
 # Parse CLI
 parser = argparse.ArgumentParser()
@@ -27,29 +67,70 @@ layint_api.configuration.api_key['Authorization'] = v.get("api_key")
 image_api = layint_api.ImageApi()
 image_api.api_client.host = v.get("api_host")
 
-# Create image.tar
+# set tag to default if not mentioned
 if len(args.name.split(":")) < 2:
   print("Using default tag 'latest'")
   args.name = args.name + ":latest"
-image_tar = "/tmp/"+str(uuid.uuid4())+".tar"
-rc = call(["docker", "save", args.name, "-o", image_tar])
-if rc != 0:
-    print("Failed to create image tar using 'docker save'. Make sure that image exists locally.")
+
+# Create unique image name
+image_tar = "/tmp/" + str(uuid.uuid4()) + ".tar"
+image_gz = image_tar + ".gz"
+
+# Create image.tar
+sys.stdout.write("Making image.tar...")
+sys.stdout.flush()
+spinner.start()
+try:
+    rc = call(["docker", "save", args.name, "-o", image_tar])
+    if rc != 0:
+        print("Failed to create image tar using 'docker save'. Make sure that image exists locally.")
+        sys.exit(1)
+except(KeyboardInterrupt, SystemExit):
+    cleanup()
     sys.exit(1)
-  
-# Create new Image definition
+spinner.stop()
+print("Done")
+
+# Compressing file
+sys.stdout.write("compressing image.tar...")
+sys.stdout.flush()
+spinner = Spinner()
+spinner.start()
+try:
+    with open(image_tar, 'rb') as f_in, gzip.open(image_gz, 'wb') as f_out:
+        shutil.copyfileobj(f_in, f_out)
+except(KeyboardInterrupt, SystemExit):
+    cleanup()
+    print("Failed to compress image.tar. Exiting..")
+    sys.exit(1)
+spinner.stop()
+print("Done")
+
+# Upload image to scan
 if args.verbose:
     print("Creating Image %s on API host %s..." % (args.name, v.get("api_host")))
+sys.stdout.write("uploading image to scan...")
+sys.stdout.flush()
+spinner.start()
 try:
-    api_response = image_api.add_local_image(image_name=args.name, image_tar=image_tar)
-except ApiException as e:
-    print("Exception when calling ImageApi->add_local_image: %s\n" % e)
-    call(["rm", image_tar])
+    api_response = image_api.add_local_image(image_name=args.name, image_tar=image_gz)
+except IOError as e:
+    cleanup()
+    print("IOException when calling ImageApi->add_local_image: %s\n" % e)
     sys.exit(1)
+except ApiException as e:
+    cleanup()
+    print("Exception when calling ImageApi->add_local_image: %s\n" % e)
+    sys.exit(1)
+except(KeyboardInterrupt, SystemExit):
+    cleanup()
+    sys.exit(1)
+spinner.stop()
+print("Done")
 
 if args.verbose:
     print(api_response)
-    call(["rm", image_tar])
 else:
     print("Image created, ID " + api_response.id)
-    call(["rm", image_tar])
+
+cleanup()
