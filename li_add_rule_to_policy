@@ -17,18 +17,19 @@ import csv
 # Parse CLI
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-parser.add_argument("--policyid", help="ID of policy to add rule to", required=False)
+parser.add_argument("--id", help="ID of policy to add rule to", required=False)
 parser.add_argument("--policy-name", help="Name of policy to add rule to", required=False)
 parser.add_argument("--description", help="Description for rule")
 parser.add_argument("--name", help="Name label for rule", default=None)
-parser.add_argument("--rules-csv", help="Policy rules only csv file to add to rules, rule_type will be set to syscall.", default=None)
+# --rules-csv: we no longer support compiled policy rule format, we require syscall 'sys_name' format now
+parser.add_argument("--rules-sys-csv", help="Policy rules with system call names in csv format, rule_type will be set to syscall.", default=None)
 parser.add_argument("--rules-csv-fixed-name", help="Single name to use for all imported cvs rules.", default=None)
 parser.add_argument("--rules-csv-names", help="Name selection for imported cvs rules.", choices=["original", "auto"], default="original")
 parser.add_argument("--type", help="rule type", choices=["file", "write", "execution", "listener", "network", "syscall", "syscallgroup", "java"], default="file")
 parser.add_argument("--program", help="Program to match for rule, absolute path highly recommended.", default="*")
 parser.add_argument("--action", help="Action for the rule", choices=["allow", "deny"], default="allow")
 # TBD to support syscall number vs name: we would need a form of GetXSyscallNumbers (where X if rule type) from common/syscall.go 
-parser.add_argument("--syscall", help="Syscall to match for the rule", type=str, default="")
+parser.add_argument("--syscall", help="LI Syscall name to match for the rule, e.g. sys_open", type=str, default="")
 parser.add_argument("--arg1", help="Argument1 to match for the rule", default="")
 parser.add_argument("--arg2", help="Argument2 to match for the rule", default="")
 parser.add_argument("--arg3", help="Argument3 to match for the rule", default="")
@@ -37,13 +38,13 @@ parser.add_argument("--default-network-action", help="Default action for network
 parser.add_argument("--default-program-action", help="Default action for program rules", choices=["allow", "deny"], default="allow")
 args = parser.parse_args()
 
-if args.policy_name is None and args.policyid is None:
-    print("--policy-name or --policyid required\n")
+if args.policy_name is None and args.id is None:
+    print("--policy-name or --id required\n")
     print(parser.print_help())
     sys.exit()
 
-if args.policy_name is not None and args.policyid is not None:
-    print("--policy-name cannot be used with --policyid\n")
+if args.policy_name is not None and args.id is not None:
+    print("--policy-name cannot be used with --id\n")
     print(parser.print_help())
     sys.exit()
 
@@ -55,13 +56,13 @@ policy_api.api_client.host = v.get("api_host")
 
 try:
     policy = None
-    if args.policyid is not None:
-        policy = policy_api.get_policy(args.policyid)
+    if args.id is not None:
+        policy = policy_api.get_policy(args.id)
     else:
         policy = policy_api.get_policy_by_name(args.policy_name)
 except ApiException as e:
-    if args.policyid is not None:
-        print("Unable to load policy with id %s:%s\n" % (args.policyid, e))
+    if args.id is not None:
+        print("Unable to load policy with id %s:%s\n" % (args.id, e))
     else:
         print("Unable to load policy named %s:%s\n" % (args.policy_name, e))
     sys.exit()
@@ -80,8 +81,8 @@ if policy.group_id is None:
 
 numb_fields=7
 ctr=0
-if args.rules_csv is not None:
-  with open(args.rules_csv, 'rb') as f:
+if args.rules_sys_csv is not None:
+  with open(args.rules_sys_csv, 'rb') as f:
     reader = csv.reader(f)
     for row in reader:
       if len(row) < numb_fields:
@@ -107,7 +108,7 @@ if args.rules_csv is not None:
       else:
         rule.action = "allow"
 
-      rule.syscall = int(row[3])
+      rule.syscall = row[3]
       rule.arg1 = row[4]
       rule.arg2 = row[5]
       rule.arg3 = row[6]

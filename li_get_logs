@@ -49,4 +49,6 @@ elif not args.quiet:
     print("%s of %s logs received" % (len(container_logs.log_data), container_logs.total_log_count))
 
 for log in container_logs.log_data:
-   print(" %s,%s,%s,%s,%s,%s,%s" % (log.id, log.process_id, log.process_name, log.system_call, log.system_call_name, log.action, log.file_name))
+   # other options: log.system_call,
+   # waiting on swagger for: og.bind_port, log.bind_address
+   print(" %s,%s,%s,%s,%s,%s" % (log.id, log.process_id, log.process_name, log.system_call_name, log.action, log.file_name))
