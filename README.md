@@ -37,6 +37,11 @@ export LI_API_HOST=http://localhost/v0.01
 ```
 li_add_registry --name test2 --url=internal-registry.corp --type dtr --verbose
 ```
+## Script conventions
+* Exit code 2 on argument (input) error
+* Exit code 1 on service error
+
+
 
 ## Examples
 [Script and CI pipeline examples](examples/README.md)
