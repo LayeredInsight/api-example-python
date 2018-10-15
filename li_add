@@ -54,6 +54,8 @@ push_name="$3"
 #fi
 if [[ "$push_registry" != "" ]]; then
   set -- --push-registry "$push_registry"
+else
+  set --
 fi
 if [[ "$push_name" != "" ]]; then
   set -- "$@" --push-name "$push_name"
