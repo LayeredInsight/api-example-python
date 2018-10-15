@@ -3,6 +3,9 @@
 # Copyright (C) 2018 Layered Insight - All Rights Reserved
 # Unauthorized copying of this file, via any medium is strictly prohibited
 # Proprietary and confidential
+#
+# policy example with rules that protect /etc/passwd
+#
 
 from __future__ import print_function
 import argparse

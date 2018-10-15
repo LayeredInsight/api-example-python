@@ -3,6 +3,9 @@
 # Copyright (C) 2018 Layered Insight - All Rights Reserved
 # Unauthorized copying of this file, via any medium is strictly prohibited
 # Proprietary and confidential
+#
+# policy example to deny network connections from an accept syscall rule
+#
 
 from __future__ import print_function
 import argparse
@@ -18,7 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
 parser.add_argument("--src-port", help="Source port to match rule", default="-1")
 parser.add_argument("--src-ip",   help="Source IP   to match rule", default="*")
-parser.add_argument("--dst-port", help="Dest   port to match rule", default="-1")
+parser.add_argument("--dst-port", help="Local  port to match rule", default="-1")
 parser.add_argument("--name", help="Name for policy")
 args = parser.parse_args()
 
@@ -48,8 +51,8 @@ ip_rule.program = "*"
 ip_rule.syscall = "sys_accept"
 ip_rule.arg1 = args.src_port # src port. -1 is our "integer wildcard"
 ip_rule.arg2 = args.src_ip   # src IP
-# arg3 is not actually an accept syscall argument, but is used by LI to check the bind/dst port
-ip_rule.arg3 = args.dst_port # dest/bind port
+# arg3 is not actually an accept syscall argument, but is used by LI to check the local port
+ip_rule.arg3 = args.dst_port # local port
 ip_rule.action = "deny"
 policy.rules.append(ip_rule)
 
