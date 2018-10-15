@@ -19,7 +19,7 @@ parser.add_argument("--name", help="Name for config", required=True)
 parser.add_argument("--mq", help="IP or hostname of message queue", required=True)
 parser.add_argument("--policyid", help="ID of security policy to apply to the configuration", required=False)
 parser.add_argument("--policy", help="Name of policy to add rule to", required=False)
-parser.add_argument("--logging", help="Enable behavior logging (default true)", choices=["true", "false"], default="true")
+parser.add_argument("--log-mode", help="Specify logging mode [ 0 - 15 ] (15 is all logs)", default=3)
 parser.add_argument("--sniffing", help="Enable network sniffing (default false)", choices=["true", "false"], default="false")
 parser.add_argument("--defaultconfig", help="Specifies if this is default configuration (default false)", choices=["true", "false"], default="false")
 args = parser.parse_args()
@@ -42,7 +42,7 @@ policy_api.api_client.host = v.get("api_host")
 config = layint_api.Config()
 config.name = args.name
 config.mq = args.mq
-config.logging = args.logging
+config.log_mode = args.log_mode
 config.sniffing = args.sniffing
 config.default = args.defaultconfig
 config.policy_id = args.policyid
