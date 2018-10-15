@@ -3,6 +3,10 @@
 # Copyright (C) 2018 Layered Insight - All Rights Reserved
 # Unauthorized copying of this file, via any medium is strictly prohibited
 # Proprietary and confidential
+#
+# policy example with rules that protect /etc/passwd, 
+# - includes an ignored syscall list to filter for performance tuning
+#
 
 from __future__ import print_function
 import argparse
@@ -44,6 +48,8 @@ passwd_rule.syscall = "sys_open"
 passwd_rule.arg1 = "/etc/passwd"
 passwd_rule.action = "deny"
 policy.rules.append(passwd_rule)
+
+# the following read syscalls could be ignored by a IO performance tuning syscall list
 passwd_rule = layint_api.PolicyRule()
 passwd_rule.name = "No read /etc/passwd"
 passwd_rule.rule_type = "syscall"

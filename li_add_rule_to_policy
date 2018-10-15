@@ -27,6 +27,7 @@ parser.add_argument("--rules-csv-fixed-name", help="Single name to use for all i
 parser.add_argument("--rules-csv-names", help="Name selection for imported cvs rules.", choices=["original", "auto"], default="original")
 parser.add_argument("--type", help="rule type", choices=["file", "write", "execution", "listener", "network", "syscall", "syscallgroup", "java"], default="file")
 parser.add_argument("--program", help="Program to match for rule, absolute path highly recommended.", default="*")
+parser.add_argument("--position", help="Insert position for rule, zero is first position. Default is to append.", type=int, default=None)
 parser.add_argument("--action", help="Action for the rule", choices=["allow", "deny"], default="allow")
 # TBD to support syscall number vs name: we would need a form of GetXSyscallNumbers (where X if rule type) from common/syscall.go 
 parser.add_argument("--syscall", help="LI Syscall name to match for the rule, e.g. sys_open", type=str, default="")
@@ -113,7 +114,11 @@ if args.rules_sys_csv is not None:
       rule.arg2 = row[5]
       rule.arg3 = row[6]
 
-      policy.rules.append(rule)
+      if args.position is None:
+          policy.rules.append(rule)
+      else:
+          policy.rules.insert(args.position, rule)
+          args.position = args.position + 1
 
       #print(row)
       #print(rule)
@@ -139,16 +144,10 @@ else:
       rule.file = rule.arg1
       rule.arg1 = None
 
-
-  policy.rules.append(rule)
-
-#ssh_rule = layint_api.PolicyRule()
-#ssh_rule.name = "Stop sshd bind"
-#ssh_rule.rule_type = "listener"
-#ssh_rule.program = "/usr/sbin/sshd"
-#ssh_rule.listening_port = 22
-#ssh_rule.action = "deny"
-#policy.rules.append(ssh_rule)
+  if args.position is None:
+      policy.rules.append(rule)
+  else:
+      policy.rules.insert(args.position, rule)
 
 # Create new Policy definition
 if args.verbose:
