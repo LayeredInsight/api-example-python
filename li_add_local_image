@@ -10,7 +10,7 @@ import layint_api
 from layint_api.rest import ApiException
 from vyper import v
 from li_utils.envtools import env_setup
-from subprocess import call
+import subprocess
 import uuid
 import gzip
 import shutil
@@ -50,8 +50,8 @@ class Spinner:
 spinner = Spinner()
 def cleanup():
     spinner.stop()
-    call(["rm", image_tar])
-    call(["rm", image_gz])
+    subprocess.call(["rm", image_tar])
+    subprocess.call(["rm", image_gz])
 
 # Parse CLI
 parser = argparse.ArgumentParser()
@@ -60,12 +60,6 @@ parser.add_argument("--name", help="Name of local image", required=True)
 args = parser.parse_args()
 
 env_setup()
-
-layint_api.configuration.api_key['Authorization'] = v.get("api_key")
-
-# Image API
-image_api = layint_api.ImageApi()
-image_api.api_client.host = v.get("api_host")
 
 # set tag to default if not mentioned
 if len(args.name.split(":")) < 2:
@@ -81,7 +75,7 @@ sys.stdout.write("Making image.tar...")
 sys.stdout.flush()
 spinner.start()
 try:
-    rc = call(["docker", "save", args.name, "-o", image_tar])
+    rc = subprocess.call(["docker", "save", args.name, "-o", image_tar])
     if rc != 0:
         print("Failed to create image tar using 'docker save'. Make sure that image exists locally.")
         sys.exit(1)
@@ -92,7 +86,7 @@ spinner.stop()
 print("Done")
 
 # Compressing file
-sys.stdout.write("compressing image.tar...")
+sys.stdout.write("Compressing image.tar...")
 sys.stdout.flush()
 spinner = Spinner()
 spinner.start()
@@ -109,28 +103,15 @@ print("Done")
 # Upload image to scan
 if args.verbose:
     print("Creating Image %s on API host %s..." % (args.name, v.get("api_host")))
-sys.stdout.write("uploading image to scan...")
-sys.stdout.flush()
-spinner.start()
+print("Uploading image to scan...")
+
 try:
-    api_response = image_api.add_local_image(image_name=args.name, image_tar=image_gz)
-except IOError as e:
+    cmd = ['curl', '-X', 'POST', v.get("api_host")+'/LocalImages?ImageName='+args.name, '-H', 'accept: application/json', '-H', 'Content-Type: multipart/form-data', '-H', 'Authorization: '+v.get("api_key"), '-F', 'image.tar=@'+image_gz+';type=application/gzip']
+    resp = subprocess.check_output(cmd)
+except subprocess.CalledProcessError as e:
     cleanup()
-    print("IOException when calling ImageApi->add_local_image: %s\n" % e)
+    print("Error while executing curl command %s\n" % e)
     sys.exit(1)
-except ApiException as e:
-    cleanup()
-    print("Exception when calling ImageApi->add_local_image: %s\n" % e)
-    sys.exit(1)
-except(KeyboardInterrupt, SystemExit):
-    cleanup()
-    sys.exit(1)
-spinner.stop()
-print("Done")
 
-if args.verbose:
-    print(api_response)
-else:
-    print("Image created, ID " + api_response.id)
-
+print('\n'+resp)
 cleanup()
