@@ -32,14 +32,16 @@ image_name=${1#*"$sep"}
 
 timestamp=`date '+%Y-%m-%d_%H:%M:%S'`
 
-# we have to add a special case for docker since we a registry with --url="docker.io" may cause other issues
+# we add a special case for docker since a registry with --url="docker.io" will trip up 'docker login'
 if [[ "$registry_fqdn" == "docker.io" ]]; then
   liregistry_name="$registry_fqdn"
 else
   # lookup registry name on LI server from registry FQDN
   liregistry_name=`./li_list_registries --fqdn "$registry_fqdn"`
-  # strip whitespace from li_list_registries output format
-  liregistry_name=`echo $liregistry_name`
+  # print ID column
+  liregistry_id=`echo $liregistry_name | awk '{print $1}'`
+  # print name column
+  liregistry_name=`echo $liregistry_name | awk '{print $3}'`
 fi
 
 push_registry="$2"

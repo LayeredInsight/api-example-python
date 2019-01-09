@@ -39,4 +39,4 @@ for registry in registries:
     # match FQDN for li_instrument support
     imageFQDN=registry['URL']
     if args.fqdn is None or args.fqdn == imageFQDN:
-        print("  %s" % (registry['Name']))
+        print("%s - %s" % (registry['ID'], registry['Name']))
