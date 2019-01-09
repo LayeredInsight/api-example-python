@@ -29,7 +29,7 @@ if args.verbose:
 try:
     containers = container_api.get_containers()
 except ApiException as e:
-    print("Exception when calling ConfigurationApi->list_all_configurations(): %s" % e)
+    print("Exception when calling ContainerApi->get_containers(): %s" % e)
     sys.exit()
 
 if args.verbose:
