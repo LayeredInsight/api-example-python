@@ -9,8 +9,10 @@ FROM python:2.7.14-alpine3.7
 RUN mkdir -p /layint/li_utils/
 COPY * /layint/
 COPY li_utils/* /layint/li_utils/
+
+# add docker and curl for li_add_local_image
 RUN apk update && \
-    apk add gcc musl-dev && \
+    apk add gcc musl-dev curl docker && \
     pip install -r /layint/requirements.txt && \
     pip install --index-url https://test.pypi.org/simple/ layint-api==0.10a1
 
