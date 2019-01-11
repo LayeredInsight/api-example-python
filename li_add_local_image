@@ -57,6 +57,7 @@ def cleanup():
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
 parser.add_argument("--name", help="Name of local image", required=True)
+parser.add_argument("--upload-timeout", help="Upload Timeout in seconds", required=False, default="3600")
 args = parser.parse_args()
 
 env_setup()
@@ -106,7 +107,7 @@ if args.verbose:
 print("Uploading image to scan...")
 
 try:
-    cmd = ['curl', '-X', 'POST', v.get("api_host")+'/LocalImages?ImageName='+args.name, '-H', 'accept: application/json', '-H', 'Content-Type: multipart/form-data', '-H', 'Authorization: '+v.get("api_key"), '-F', 'image.tar=@'+image_gz+';type=application/gzip']
+    cmd = ['curl', '--max-time', args.upload_timeout, '-X', 'POST', v.get("api_host")+'/LocalImages?ImageName='+args.name, '-H', 'accept: application/json', '-H', 'Content-Type: multipart/form-data', '-H', 'Authorization: '+v.get("api_key"), '-F', 'image.tar=@'+image_gz+';type=application/gzip']
     resp = subprocess.check_output(cmd)
 except subprocess.CalledProcessError as e:
     cleanup()
