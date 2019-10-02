@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Layered Insight - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+from __future__ import print_function
+import argparse
+import sys
+import json
+from pprint import pprint
+import layint_api
+from layint_api.rest import ApiException
+from vyper import v
+from li_utils.envtools import env_setup
+
+# Parse CLI
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
+parser.add_argument("-i", "--id", help="Container ID or Digest)", required=True)
+args = parser.parse_args()
+
+env_setup()
+
+layint_api.configuration.api_key['Authorization'] = v.get("api_key")
+container_api = layint_api.ContainerApi()
+container_api.api_client.host = v.get("api_host")
+
+if args.verbose:
+    print("Getting Containers on API host %s..." % (v.get("api_host")))
+try:
+    container = container_api.get_container(args.id)
+except ApiException as e:
+    print("Exception when calling ContainerApi->get_container(): %s" % e)
+    sys.exit()
+
+def remove_prefix_str(t, prefix):
+    if t.startswith(prefix):
+        return t[len(prefix):]
+    return t
+
+def remove_prefix(o):
+    for k in o.keys():
+        nkey = remove_prefix_str(k,"_")
+        if nkey != k:
+            o[nkey] = o[k]
+            del o[k]
+    return o
+
+
+#if args.verbose:
+# sort_keys=True
+print(json.dumps(json.loads(json.dumps(container, default=lambda o: o.__dict__, indent=2), object_hook=remove_prefix)))
+#print(container)
+#print(json.dump(container,ensure_ascii=True))
+#print(jsonpickle.encode(container))
+#print('"%s"' % container)
+
+#print(" %s - %s - %s - %s" % (container.id, container.status, container.location, container.application))
