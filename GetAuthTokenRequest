@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# reads user credentials from stdin, creates apigateway authentication request body
+stty_bak=`stty -g`
+stty -echo
+printf "Username: " >&2
+read USER
+printf "\nPassword: " >&2
+read PASS
+stty $stty_bak
+echo 'username='${USER}'&password='${PASS}'&token=true&permissions=true'

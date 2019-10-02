@@ -7,7 +7,7 @@ import sys
 from vyper import v
 import layint_api
 
-API_VERSION_PATH="/v0.01"
+API_VERSION_PATH="/crs/v1.2/api"
 
 # Config setup
 def env_setup():

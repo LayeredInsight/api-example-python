@@ -1,8 +1,8 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/layeredinsight/runtime-python-client.svg?style=plastic)](https://hub.docker.com/r/layeredinsight/runtime-python-client/)
 
-# Runtime client API scripts
+# CS Runtime client API scripts
 This is a collection of python scripts leveraging our Swagger library
-to interact with the LI Witness/Control API server. They're intended
+to interact with the CS Runtime API services. They're intended
 to be an example of what's possible, and a starting point...
 
 ## Usage
@@ -28,14 +28,17 @@ pip install -r requirements.txt
 ```
 
 ### Set environment variables for your installation
+Please replace the apigateway domain in the example below with your appropriate customer FQDN for apigateway.
 ```
-export LI_API_KEY=ApiKey:demo:setanapikey
-export LI_API_HOST=http://localhost/v0.01
+export LI_API_KEY=Bearer:`./GetAuthTokenRequest | curl -s -X POST https://apigateway.p24.eng.sjc01.qualys.com/auth -d@-`
+export LI_API_HOST=https://apigateway.p24.eng.sjc01.qualys.com/crs/v1.2/api
+# Test pods only, use `curl -k ...` and set
+# export LI_VERIFY_SSL=false
 ```
 
 ## Finally, run the scripts
 ```
-li_add_registry --name test2 --url=internal-registry.corp --type dtr --verbose
+li_list_containers
 ```
 ## Script conventions
 * Exit code 2 on argument (input) error
