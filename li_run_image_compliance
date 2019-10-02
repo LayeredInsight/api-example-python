@@ -32,7 +32,7 @@ if args.verbose:
 try:
     api_results = images_api.get_image_compliance(args.imageid, run="true", policies=args.policyid)
 except ApiException as e:
-    print("Exception when calling ImagesApi->add_image: %s\n" % e)
+    print("Exception when calling ImagesApi->get_image_compliance: %s\n" % e)
     sys.exit(1)
 
 if args.verbose:
