@@ -37,15 +37,19 @@ except ApiException as e:
     print("Exception when calling PolicyApi->get_policy: %s" % e)
     sys.exit(2)
 
-print("suspended? %s" % policy.suspend)
+suspended = "false"
+if policy.mode == 1:
+    suspended = "true"
+
+print("suspended? %s" % suspended)
 print("userid: %s" % policy.user_id)
 if args.verbose:
     print("Suspending Policy by ID %s on API host %s..." % (policy.id, v.get("api_host")))
 try:
     if args.unsuspend:
-        policy.suspend = False
+        policy.mode = 0
     else:
-        policy.suspend = True
+        policy.mode = 1
     api_response = policy_api.update_policy(policy.id, policy=policy)
     if args.verbose:
         pprint(api_response)
