@@ -5,6 +5,7 @@
 from __future__ import print_function
 import sys
 from vyper import v
+import layint_api
 
 API_VERSION_PATH="/v0.01"
 
@@ -21,3 +22,5 @@ def env_setup():
         print("ERROR: LI_API_HOST environment variable must end with " + API_VERSION_PATH)
         print("LI_API_HOST current value: " + v.get("api_host"))
         sys.exit()
+
+    layint_api.configuration.verify_ssl = v.get_bool("verify_ssl")
