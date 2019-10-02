@@ -89,10 +89,12 @@ if [[ "$imageid" == "" ]]; then
 	--name "$image_name" \
 	--description "$image_decription" \
 	--registry "$liregistry_name" \
+	--instrument \
 	"${@}"`
 fi
 set -x
 
-./li_instrument_image --id $imageid
+# api#782: avoid scan image update race
+#./li_instrument_image --id $imageid
 
 ./li_wait_for_instrumentation --id $imageid --sleep 5
