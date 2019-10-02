@@ -17,11 +17,16 @@ from li_utils.envtools import env_setup
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
 parser.add_argument("--configid", help="ID of configuration to apply to image", required=False)
-parser.add_argument("--policyid", help="ID of security policy to apply to image", required=False)
-parser.add_argument("--push_registry", help="ID of push registry to apply to image", required=False)
-# TODO add support to update push_name, tags
+parser.add_argument("--push-registry", help="Name of registry to push layered image", required=False)
+parser.add_argument("--push-name", help="Name for image to push", required=False)
 parser.add_argument("-i", "--id", help="ID of image to update", required=True)
 args = parser.parse_args()
+
+def parse_image_name(i):
+    tagPos = i.rfind(":")
+    if tagPos is -1:
+        return i, ""
+    return i[:tagPos], i[tagPos+1:]
 
 env_setup()
 
@@ -37,18 +42,6 @@ if args.configid is not None:
         config = config_api.get_config(args.configid)
     except ApiException as e:
         print("Exception when calling ConfigurationApi->get_config: %s\n" % e)
-        sys.exit(1)
-
-policy = None
-if args.policyid is not None:
-    if args.verbose:
-        print("Looking up policy %s on API host %s..." % (args.policyid, v.get("api_host")))
-    try:
-        policy_api = policy_api = layint_api.PolicyApi()
-        policy_api.api_client.host = v.get("api_host")
-        policy = policy_api.get_policy(args.policyid)
-    except ApiException as e:
-        print("Exception when calling PolicyApi->get_policy: %s\n" % e)
         sys.exit(1)
 
 push_registry = None
@@ -82,23 +75,24 @@ if args.verbose:
 request = layint_api.ImageUpdateRequest()
 request.id = image.id
 request.config_id = image.config_id
-request.policy_id = image.policy_id
-request.push_registry = image.push_registry
-request.push_name = image.push_name
-request.tags = image.tags
+request.push_repositories = image.push_repositories
 
 # update the request
 if config is not None:
     request.config_id = config.id
 
-if policy is not None:
-    request.policy_id = policy.id
-
 if args.push_registry is "":
     request.push_registry = None
 
 if push_registry is not None:
-    request.push_registry = push_registry.id
+    if args.push_name is None:
+        print("push_name required with push_registry argument")
+        sys.exit(1)
+    push_repository = layint_api.Repository()
+    push_repository.registry_id = push_registry.id
+    push_repository.path, push_repository.tag = parse_image_name(args.push_name)
+    request.push_repositories = []
+    request.push_repositories.append(push_repository)
 
 # Update image
 if args.verbose:
