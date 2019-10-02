@@ -21,6 +21,7 @@ parser.add_argument("--policyid", help="ID of security policy to apply to image"
 parser.add_argument("--log-mode", help="Specify logging mode [ 0 - 15 ] (15 is all logs)", required=False, type=int, default=None)
 parser.add_argument("--name", help="Name to update for config id", required=False, default=None)
 parser.add_argument("--mq", help="MQ URL to update for config id", required=False, default=None)
+parser.add_argument("--sniffing", help="Enable network sniffer", required=False, type=bool, default=None)
 args = parser.parse_args()
 
 env_setup()
@@ -71,15 +72,21 @@ if args.name is not None:
 if args.log_mode is not None:
     config.log_mode = args.log_mode 
 
+if args.sniffing is not None:
+    config.sniffing = args.sniffing
+
 # Update image
 if args.verbose:
     print("Updating Config on API host %s..." % (v.get("api_host")))
     pprint(config)
+
+rconfig = None
 try:
-    api_response = config_api.update_config(config.id, config=config)
+    rconfig = config_api.update_config(config.id, config=config)
 except ApiException as e:
     print("Exception when calling ConfigurationApi->update_config: %s\n" % e)
     sys.exit(1)
 
 if args.verbose:
     print("Config updated, ID " + str(config.id))
+    pprint(rconfig)
