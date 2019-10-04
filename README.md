@@ -23,18 +23,34 @@ Now any libraries you install with pip will be local to this environment, access
 From this source directory, run
 
 ```
-pip install layint-api
+# TODO, update pypi layint-api: 
+#   pip install layint-api # for crs-public-python-client
+release=9a6fcf88
+wget https://art-hq.intranet.qualys.com/artifactory/third-party/crs-private-python-client.${release}.zip
+unzip crs-private-python-client.${release}.zip
+cd python-client
+pip install -e .
+cd ..
 pip install -r requirements.txt
 ```
 
 ### Set environment variables for your installation
 Please replace the apigateway domain in the example below with your appropriate customer FQDN for apigateway.
+
+Production Pods:
 ```
-export LI_API_KEY=Bearer:`./GetAuthTokenRequest | curl -s -X POST https://apigateway.p24.eng.sjc01.qualys.com/auth -d@-`
-export LI_API_HOST=https://apigateway.p24.eng.sjc01.qualys.com/crs/v1.2/api
+export LI_API_KEY="Bearer:`./GetAuthTokenRequest | curl -s -X POST https://apigateway.pXX.eng.sjc01.qualys.com/auth -d@-`
+export LI_API_HOST=https://apigateway.pXX.eng.sjc01.qualys.com/crs/v1.2/api
+```
+Engineering Pods:
+```
 # Test pods only, use `curl -k ...` and set
-# export LI_VERIFY_SSL=false
+export LI_VERIFY_SSL=false
+export LI_API_KEY="Bearer:`./GetAuthTokenRequest | curl --insecure -s -X POST https://apigateway.p24.eng.sjc01.qualys.com/auth -d@-`
+# FIXME: export LI_API_HOST=https://apigateway.p24.eng.sjc01.qualys.com/crs/v1.2/api
+export LI_API_HOST=https://kubelb.p24.eng.sjc01.qualys.com/crs/v1.2/api
 ```
+
 
 ## Finally, run the scripts
 ```
