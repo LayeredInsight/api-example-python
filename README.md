@@ -39,16 +39,16 @@ Please replace the apigateway domain in the example below with your appropriate 
 
 Production Pods:
 ```
-export LI_API_KEY="Bearer:`./GetAuthTokenRequest | curl -s -X POST https://apigateway.pXX.eng.sjc01.qualys.com/auth -d@-`
-export LI_API_HOST=https://apigateway.pXX.eng.sjc01.qualys.com/crs/v1.2/api
+export LI_API_KEY="Bearer `./GetAuthTokenRequest | curl -s -X POST https://apigateway.pXX.eng.sjc01.qualys.com/auth -d@-`
+export LI_API_HOST=https://apigateway.pXX.eng.sjc01.qualys.com/csapi/v1.2/runtime
 ```
 Engineering Pods:
 ```
-# Test pods only, use `curl -k ...` and set
+# Test pods only, use `curl --insecure ...` and set
 export LI_VERIFY_SSL=false
-export LI_API_KEY="Bearer:`./GetAuthTokenRequest | curl --insecure -s -X POST https://apigateway.p24.eng.sjc01.qualys.com/auth -d@-`
-# FIXME: export LI_API_HOST=https://apigateway.p24.eng.sjc01.qualys.com/crs/v1.2/api
-export LI_API_HOST=https://kubelb.p24.eng.sjc01.qualys.com/crs/v1.2/api
+export LI_API_KEY="Bearer `./GetAuthTokenRequest | curl --insecure -s -X POST https://apigateway.p24.eng.sjc01.qualys.com/auth -d@-`
+export LI_API_HOST="https://apigateway.p24.eng.sjc01.qualys.com/csapi/v1.2/runtime"
+# alternative: export LI_API_HOST=https://kubelb.p24.eng.sjc01.qualys.com/crs/v1.2/api
 ```
 
 
