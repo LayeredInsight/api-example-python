@@ -44,7 +44,8 @@ if args.verbose:
     print(" PageSize: %s" % (container_logs.page_size))
     print(" URI: %s" % (container_logs.uri))
     print(" Total log count: %s" % (container_logs.total_log_count))
-    pprint(container_logs.log_data[0])
+    if len(container_logs.log_data) > 0:
+        pprint(container_logs.log_data[0])
 elif not args.quiet:
     print("%s of %s logs received" % (len(container_logs.log_data), container_logs.total_log_count))
 
