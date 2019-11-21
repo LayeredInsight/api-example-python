@@ -1,0 +1,36 @@
+# API python client docker build script
+#
+# Copyright (C) 2019 Qualys - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+# docker build -t api-example-python .
+FROM art-hq.intranet.qualys.com:5006/secure/centos-no-root:7
+
+USER root
+
+# TODO remove and 'yum install python-pip from Q EPEL repo'
+#COPY CentOS-Base.repo /etc/yum.repos.d/
+#RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" \
+#    && python get-pip.py
+
+# --disablerepo=epel --disablerepo=qualys-common-repo
+RUN yum install -y gcc python-devel curl && \
+    pip install -r layint/requirements.txt && \
+    pip install python-client
+
+# if we push cs-runtime-api to pypi
+#    pip install --index-url https://test.pypi.org/simple/ layint-api==0.10a1
+
+USER app
+
+RUN mkdir -p layint/li_utils/
+COPY * layint/
+COPY li_utils/* layint/li_utils/
+
+### Set environment variables for your installation
+
+ENV LI_API_KEY LI_API_KEY="Bearer `./GetAuthTokenRequest | curl -s -X POST https://apigateway.pXX.eng.sjc01.qualys.com/auth -d@-`"
+ENV LI_API_HOST https://apigateway.pXX.eng.sjc01.qualys.com/csapi/v1.2/runtime
+
+ENTRYPOINT /bin/bash
