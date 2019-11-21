@@ -15,7 +15,7 @@ USER root
 #    && python get-pip.py
 
 # --disablerepo=epel --disablerepo=qualys-common-repo
-RUN yum install -y gcc python-devel curl && \
+RUN yum install -y gcc python-devel curl python-pip && \
     pip install -r layint/requirements.txt && \
     pip install python-client
 
